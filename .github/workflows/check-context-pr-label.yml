@@ -1,0 +1,35 @@
+# Reusable workflow to check that PRs have a context label (ctx:*)
+# Version: 1.0.0-beta
+# Status: Beta - This feature is experimental
+
+name: Check Context PR Label
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-missing:
+        description: 'Fail the workflow if no context label is set'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  check-label:
+    name: Verify PR has context label
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workflows repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/cicd-workflows-claude
+          path: .cicd-workflows
+
+      - name: Check PR label
+        uses: actions/github-script@v7
+        env:
+          FAIL_ON_MISSING: ${{ inputs.fail-on-missing }}
+        with:
+          script: |
+            const script = require('./.cicd-workflows/src/check-context-pr-label.js');
+            const failOnMissing = process.env.FAIL_ON_MISSING === 'true';
+            await script({ context, core }, failOnMissing);

@@ -1,6 +1,6 @@
 # Main reusable CI workflow that wraps all checks
 # This workflow can be called from external repositories
-# Version: 1.0.0
+# Version: 1.1.0-beta
 
 name: CI Checks
 
@@ -22,6 +22,18 @@ on:
         type: boolean
       assignee-fail-on-missing:
         description: 'Fail if no assignee is set on the PR'
+        required: false
+        default: true
+        type: boolean
+
+      # Context label check options (Beta)
+      enable-label-check:
+        description: '[Beta] Enable the context label check (requires "ctx:" prefix)'
+        required: false
+        default: false
+        type: boolean
+      label-fail-on-missing:
+        description: '[Beta] Fail if no context label is set on the PR'
         required: false
         default: true
         type: boolean
@@ -62,6 +74,7 @@ jobs:
           echo "Configuration:"
           echo "  - Assignee check: ${{ inputs.enable-assignee-check }}"
           echo "  - Conventional commits check: ${{ inputs.enable-conventional-commits }}"
+          echo "  - Context label check (Beta): ${{ inputs.enable-label-check }}"
 
   # PR Assignee check
   check-pr-assignee:
@@ -80,3 +93,11 @@ jobs:
       check-pr-title: ${{ inputs.conventional-commits-check-pr-title }}
       check-commits: ${{ inputs.conventional-commits-check-commits }}
       allowed-types: ${{ inputs.conventional-commits-allowed-types }}
+
+  # Context label check (Beta)
+  check-context-pr-label:
+    name: Context Label (Beta)
+    if: ${{ inputs.enable-label-check }}
+    uses: org-roharvier/cicd-workflows-claude/.github/workflows/check-context-pr-label.yml@main
+    with:
+      fail-on-missing: ${{ inputs.label-fail-on-missing }}

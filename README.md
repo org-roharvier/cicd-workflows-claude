@@ -4,7 +4,7 @@ Reusable GitHub Actions workflows for CI/CD pipelines.
 
 ## Version
 
-Current version: **1.0.0**
+Current version: **1.1.0-beta**
 
 ## Available Workflows
 
@@ -18,7 +18,13 @@ Validates that PR titles and/or commits follow the [Conventional Commits](https:
 
 Supported types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
 
-### 3. CI Wrapper (`ci.yml`)
+### 3. Check Context PR Label (`check-context-pr-label.yml`) - Beta
+
+Ensures that pull requests have at least one label starting with `ctx:` (context label).
+
+Examples of valid labels: `ctx:feature`, `ctx:bugfix`, `ctx:refactor`, `ctx:documentation`
+
+### 4. CI Wrapper (`ci.yml`)
 
 A unified workflow that combines all checks with configurable options.
 
@@ -33,11 +39,11 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited, assigned, unassigned]
+    types: [opened, synchronize, reopened, edited, assigned, unassigned, labeled, unlabeled]
 
 jobs:
   ci-checks:
-    uses: your-org/cicd-workflows-claude/.github/workflows/ci.yml@v1.0.0
+    uses: your-org/cicd-workflows-claude/.github/workflows/ci.yml@v1.1.0-beta
     with:
       # Enable/disable checks
       enable-assignee-check: true
@@ -90,19 +96,37 @@ jobs:
       allowed-types: 'feat,fix,docs,chore'
 ```
 
+#### Context label check only (Beta)
+
+```yaml
+name: Check Label
+
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled]
+
+jobs:
+  check-label:
+    uses: your-org/cicd-workflows-claude/.github/workflows/check-context-pr-label.yml@main
+    with:
+      fail-on-missing: true
+```
+
 ## Configuration Options
 
 ### CI Wrapper (`ci.yml`)
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `version` | string | `1.0.0` | Version tracking |
+| `version` | string | `1.1.0-beta` | Version tracking |
 | `enable-assignee-check` | boolean | `true` | Enable PR assignee check |
 | `assignee-fail-on-missing` | boolean | `true` | Fail if no assignee |
 | `enable-conventional-commits` | boolean | `true` | Enable conventional commits check |
 | `conventional-commits-check-pr-title` | boolean | `true` | Check PR title format |
 | `conventional-commits-check-commits` | boolean | `true` | Check commit messages |
 | `conventional-commits-allowed-types` | string | See above | Allowed commit types |
+| `enable-label-check` | boolean | `false` | Enable context label check (Beta) |
+| `label-fail-on-missing` | boolean | `true` | Fail if no `ctx:` label (Beta) |
 
 ## Versioning
 
@@ -142,4 +166,15 @@ jobs:
     with:
       assignee-fail-on-missing: true
       conventional-commits-allowed-types: 'feat,fix,chore'
+```
+
+### With context label check (Beta)
+
+```yaml
+jobs:
+  ci:
+    uses: your-org/cicd-workflows-claude/.github/workflows/ci.yml@main
+    with:
+      enable-label-check: true  # Beta feature
+      label-fail-on-missing: true
 ```

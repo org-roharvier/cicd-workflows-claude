@@ -1,0 +1,34 @@
+# Reusable workflow to check that PRs have an assignee
+# Version: 1.0.0
+
+name: Check PR Assignee
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-missing:
+        description: 'Fail the workflow if no assignee is set'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  check-assignee:
+    name: Verify PR has assignee
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workflows repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/cicd-workflows-claude
+          path: .cicd-workflows
+
+      - name: Check PR assignee
+        uses: actions/github-script@v7
+        env:
+          FAIL_ON_MISSING: ${{ inputs.fail-on-missing }}
+        with:
+          script: |
+            const script = require('./.cicd-workflows/src/check-pr-assignee.js');
+            const failOnMissing = process.env.FAIL_ON_MISSING === 'true';
+            await script({ context, core }, failOnMissing);

@@ -1,0 +1,54 @@
+# Reusable workflow to check conventional commits format
+# Version: 1.0.0
+
+name: Check Conventional Commits
+
+on:
+  workflow_call:
+    inputs:
+      check-pr-title:
+        description: 'Check the PR title for conventional commit format'
+        required: false
+        default: true
+        type: boolean
+      check-commits:
+        description: 'Check all commits in the PR for conventional commit format'
+        required: false
+        default: true
+        type: boolean
+      allowed-types:
+        description: 'Comma-separated list of allowed commit types'
+        required: false
+        default: 'feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert'
+        type: string
+
+jobs:
+  check-conventional-commits:
+    name: Verify conventional commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout workflows repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/cicd-workflows-claude
+          path: .cicd-workflows
+
+      - name: Check conventional commits
+        uses: actions/github-script@v7
+        env:
+          CHECK_PR_TITLE: ${{ inputs.check-pr-title }}
+          CHECK_COMMITS: ${{ inputs.check-commits }}
+          ALLOWED_TYPES: ${{ inputs.allowed-types }}
+        with:
+          script: |
+            const script = require('./.cicd-workflows/src/check-conventional-commits.js');
+            await script({ context, core }, {
+              checkPrTitle: process.env.CHECK_PR_TITLE === 'true',
+              checkCommits: process.env.CHECK_COMMITS === 'true',
+              allowedTypes: process.env.ALLOWED_TYPES
+            });

@@ -4,7 +4,7 @@ Reusable GitHub Actions workflows for CI/CD pipelines.
 
 ## Version
 
-Current version: **1.0.0**
+Current version: **1.0.0**dfdfssdfdfssdf
 
 ## Available Workflows
 

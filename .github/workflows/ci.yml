@@ -1,0 +1,82 @@
+# Main reusable CI workflow that wraps all checks
+# This workflow can be called from external repositories
+# Version: 1.0.0
+
+name: CI Checks
+
+on:
+  workflow_call:
+    inputs:
+      # Global version tracking
+      version:
+        description: 'Version of this workflow (for tracking purposes)'
+        required: false
+        default: '1.0.0'
+        type: string
+
+      # PR Assignee check options
+      enable-assignee-check:
+        description: 'Enable the PR assignee check'
+        required: false
+        default: true
+        type: boolean
+      assignee-fail-on-missing:
+        description: 'Fail if no assignee is set on the PR'
+        required: false
+        default: true
+        type: boolean
+
+      # Conventional commits check options
+      enable-conventional-commits:
+        description: 'Enable the conventional commits check'
+        required: false
+        default: true
+        type: boolean
+      conventional-commits-check-pr-title:
+        description: 'Check PR title for conventional commit format'
+        required: false
+        default: true
+        type: boolean
+      conventional-commits-check-commits:
+        description: 'Check all commits for conventional commit format'
+        required: false
+        default: true
+        type: boolean
+      conventional-commits-allowed-types:
+        description: 'Comma-separated list of allowed commit types'
+        required: false
+        default: 'feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert'
+        type: string
+
+jobs:
+  # Log workflow version
+  workflow-info:
+    name: Workflow Info
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display workflow version
+        run: |
+          echo "🔄 CI Checks Workflow"
+          echo "📌 Version: ${{ inputs.version }}"
+          echo ""
+          echo "Configuration:"
+          echo "  - Assignee check: ${{ inputs.enable-assignee-check }}"
+          echo "  - Conventional commits check: ${{ inputs.enable-conventional-commits }}"
+
+  # PR Assignee check
+  check-pr-assignee:
+    name: PR Assignee
+    if: ${{ inputs.enable-assignee-check }}
+    uses: org-roharvier/cicd-workflows-claude/.github/workflows/check-pr-assignee.yml@main
+    with:
+      fail-on-missing: ${{ inputs.assignee-fail-on-missing }}
+
+  # Conventional commits check
+  check-conventional-commits:
+    name: Conventional Commits
+    if: ${{ inputs.enable-conventional-commits }}
+    uses: org-roharvier/cicd-workflows-claude/.github/workflows/check-conventional-commits.yml@main
+    with:
+      check-pr-title: ${{ inputs.conventional-commits-check-pr-title }}
+      check-commits: ${{ inputs.conventional-commits-check-commits }}
+      allowed-types: ${{ inputs.conventional-commits-allowed-types }}
